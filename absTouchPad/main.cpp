@@ -132,7 +132,8 @@ int main(int arg_num, char * argv[], char * env[]) {
 	system("color f0");
 	cout << fixed << setprecision(3);
 	cout << setw(50) << ' ' << endl;
-	cout << "ENTER:옵션조정/계속,  0번:info출력유무,  1번:일시정지,  2번:ctrl키 마우스고정 활성화유무,  SPACE:종료\n";
+	cout << "Test한글Test";
+	cout << "ENTER:옵션\b조정/계속,  0번:info출력유무,  1번:일시정지,  2번:ctrl키 마우스고정 활성화유무,  SPACE:종료\n";
 	cout << "QA:감도,  WS:offset,  5번:설정가속조정\n";
 	cout << "Time Block:" << setw(2) << timeBlock << endl;
 	cout << "감도:" << setw(6) << sensitive.Get_value() << "/Q,A/\n";
