@@ -64,7 +64,7 @@ int accelInv(int input) {
 //main
 int main(int arg_num, char * argv[], char * env[]) {
 	POINT cursor;
-	int xPrev, yPrev, dx, dy, time;
+	int xPrev, yPrev, dx, dy, time, unstableCounter;
 	int tempInt1, tempInt2, tempInt3;
 	bool flag, ctrlF = true;
 	ifstream fileI;
@@ -132,8 +132,7 @@ int main(int arg_num, char * argv[], char * env[]) {
 	system("color f0");
 	cout << fixed << setprecision(3);
 	cout << setw(50) << ' ' << endl;
-	cout << "Test한글Test";
-	cout << "ENTER:옵션\b조정/계속,  0번:info출력유무,  1번:일시정지,  2번:ctrl키 마우스고정 활성화유무,  SPACE:종료\n";
+	cout << "ENTER:옵션조정/계속,  0번:info출력유무,  1번:일시정지,  2번:ctrl키 마우스고정 활성화유무,  SPACE:종료\n";
 	cout << "QA:감도,  WS:offset,  5번:설정가속조정\n";
 	cout << "Time Block:" << setw(2) << timeBlock << endl;
 	cout << "감도:" << setw(6) << sensitive.Get_value() << "/Q,A/\n";
@@ -148,9 +147,13 @@ int main(int arg_num, char * argv[], char * env[]) {
 			time = timeGetTime();
 			xPrev = cursor.x; yPrev = cursor.y;
 			flag = false;
+			unstableCounter = 0;
 			while (_kbhit()) { _getch(); }
 			while (!_kbhit()) {
+				//mouse modify main code.
+				if ((int)timeGetTime() - time >= timeBlock) printf_s("불안정횟수:%3d\n", unstableCounter++);
 				while ((int)timeGetTime() - time < timeBlock);
+				time = timeGetTime();
 				if (ctrlF && C_keyboard::Check_state(C_keyboard::CONTROL)) {
 					xPrev = MAX_X / 2; dx = 0;
 					yPrev = MAX_Y / 2; dy = 0;
@@ -161,11 +164,17 @@ int main(int arg_num, char * argv[], char * env[]) {
 					dx = cursor.x - xPrev;
 					dy = cursor.y - yPrev;
 				}
-				if (dx) { xPrev += accelInv(dx); flag = true; }
-				if (dy) { yPrev += accelInv(dy); flag = true; }
-				if (flag) SetCursorPos(xPrev, yPrev);
-				time = timeGetTime();
-				flag = false;
+				if (flag) {
+					flag = false;
+					if (dx) { xPrev += accelInv(dx); flag = true; }
+					if (dy) { yPrev += accelInv(dy); flag = true; }
+					if (flag) SetCursorPos(xPrev, yPrev);
+					flag = false;
+				}
+				else {
+					if (dx) { xPrev += accelInv(dx); flag = true; }
+					if (dy) { yPrev += accelInv(dy); flag = true; }
+				}
 				if (xPrev < 0)xPrev = 0;
 				else if (xPrev > MAX_X) xPrev = MAX_X;
 				if (yPrev < 0)yPrev = 0;
@@ -177,7 +186,7 @@ int main(int arg_num, char * argv[], char * env[]) {
 				}
 			}
 		}//mouse modify code end.
-		//user interface;
+		 //user interface;
 		gotoxy(0, 0);
 		cout << setw(50) << ' ' << endl;
 		cout << "ENTER:옵션조정/계속,  0번:info출력유무,  1번:일시정지,  2번:ctrl키 마우스고정 활성화유무,  SPACE:종료\n";
@@ -229,14 +238,3 @@ int main(int arg_num, char * argv[], char * env[]) {
 //function define
 
 //verge
-
-
-
-
-
-
-
-
-
-
-

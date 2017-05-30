@@ -11,6 +11,8 @@
 using namespace std;
 
 //mecro
+#define MAX_X 1536
+#define MAX_Y 863
 #define MAX_V 1000
 #define MOVE_D 100
 //type, class
@@ -39,6 +41,7 @@ int main(int arg_num, char * argv[], char * env[]) {
 	ifstream fileI;
 	ofstream fileO;
 
+	system("color f0");
 	system("title Mouse Accel Deletor Optimizer");
 	cout << "Mouse Accel Deletor Optimizer" << endl;
 	cout << "Any Key to start, Any key to end";
@@ -65,10 +68,13 @@ int main(int arg_num, char * argv[], char * env[]) {
 		while ((int)timeGetTime() - time < timeBlock){
 			gotoxy(0, 4); cout << "Fast enough";
 		}
+		time = timeGetTime();
 		GetCursorPos(&cursor);
 		dx = cursor.x - xPrev;
-		SetCursorPos(500, 500);
-		time = timeGetTime();
+		if (cursor.x < 10 || MAX_X - 10 < cursor.x || cursor.y < 10 || MAX_Y - 10 < cursor.y) {
+			SetCursorPos(MAX_X / 2, MAX_Y / 2);
+			cursor.x = MAX_X / 2;
+		}
 		if (dx > 0) {
 			if (state != RIGHT) {
 				if (dxSum > MOVE_D) {
@@ -78,6 +84,8 @@ int main(int arg_num, char * argv[], char * env[]) {
 					gotoxy(0, 0);
 					cout << "---------left" << playCounter++ << endl;
 					cout << setw(4) << tempInt1 << "  " << setw(5) << dxSum << "  " << setw(3) << endl;
+					SetCursorPos(MAX_X / 2, MAX_Y / 2);
+					cursor.x = MAX_X / 2;
 				}
 				state = RIGHT;
 				dxSum = dx;
@@ -98,6 +106,8 @@ int main(int arg_num, char * argv[], char * env[]) {
 					gotoxy(0, 0);
 					cout << "right--------" << playCounter++ << endl;
 					cout << setw(4) << tempInt1 << "  " << setw(5) << dxSum << "  " << setw(3) << endl;
+					SetCursorPos(MAX_X / 2, MAX_Y / 2);
+					cursor.x = MAX_X / 2;
 				}
 				state = LEFT;
 				dxSum = -dx;
@@ -116,7 +126,7 @@ int main(int arg_num, char * argv[], char * env[]) {
 				state = STOP;
 			}
 		}
-		xPrev = 500;
+		xPrev = cursor.x;
 		gotoxy(0, 4); cout << "           ";
 	}
 	fileO.open("Mouse_Accel_Optimizer.conf");
