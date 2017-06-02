@@ -33,6 +33,9 @@
     <ClInclude Include="Resource.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
+    <ClInclude Include="MMTimers.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="abdTP_directX.cpp">
@@ -42,6 +45,9 @@
       <Filter>소스 파일</Filter>
     </ClCompile>
     <ClCompile Include="stdafx.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="MMTimers.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
   </ItemGroup>
@@ -59,5 +65,13 @@
     <Image Include="res\abdTP_directX.ico">
       <Filter>리소스 파일</Filter>
     </Image>
+  </ItemGroup>
+  <ItemGroup>
+    <Library Include="D:\Folder\LinkProgramFiles\Microsoft DirectX SDK (June 2010)\Lib\x86\dinput8.lib">
+      <Filter>소스 파일</Filter>
+    </Library>
+    <Library Include="D:\Folder\LinkProgramFiles\Microsoft DirectX SDK (June 2010)\Lib\x86\dxguid.lib">
+      <Filter>소스 파일</Filter>
+    </Library>
   </ItemGroup>
 </Project>

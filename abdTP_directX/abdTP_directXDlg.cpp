@@ -6,13 +6,16 @@
 #include "abdTP_directX.h"
 #include "abdTP_directXDlg.h"
 #include "afxdialogex.h"
-#include <dinput.h>
-#include "MMTimer.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
 
+#define WM_MMTIMER WM_USER + 2
+HWND MyhWnd;
+void CALLBACK TimerProcK(UINT id, UINT msg, DWORD dwUser, DWORD dw1, DWORD dw2) {
+	PostMessage(MyhWnd, WM_MMTIMER, dw1, dw2);
+}
 
 // 응용 프로그램 정보에 사용되는 CAboutDlg 대화 상자입니다.
 
@@ -53,6 +56,10 @@ END_MESSAGE_MAP()
 
 CabdTP_directXDlg::CabdTP_directXDlg(CWnd* pParent /*=NULL*/)
 	: CDialogEx(IDD_ABDTP_DIRECTX_DIALOG, pParent)
+	, m_MouseData(_T(""))
+	, m_center(FALSE)
+	, m_left(FALSE)
+	, m_right(FALSE)
 {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
 }
@@ -60,12 +67,17 @@ CabdTP_directXDlg::CabdTP_directXDlg(CWnd* pParent /*=NULL*/)
 void CabdTP_directXDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialogEx::DoDataExchange(pDX);
+	DDX_Text(pDX, IDC_MOUSE_STATUS, m_MouseData);
+	DDX_Check(pDX, IDC_CENTER, m_center);
+	DDX_Check(pDX, IDC_LEFT, m_left);
+	DDX_Check(pDX, IDC_RIGHT, m_right);
 }
 
 BEGIN_MESSAGE_MAP(CabdTP_directXDlg, CDialogEx)
 	ON_WM_SYSCOMMAND()
 	ON_WM_PAINT()
 	ON_WM_QUERYDRAGICON()
+	ON_MESSAGE(WM_MMTIMER, OnMMTimer)
 END_MESSAGE_MAP()
 
 
@@ -101,6 +113,19 @@ BOOL CabdTP_directXDlg::OnInitDialog()
 	SetIcon(m_hIcon, FALSE);		// 작은 아이콘을 설정합니다.
 
 	// TODO: 여기에 추가 초기화 작업을 추가합니다.
+	HRESULT hr;
+	//항상 NULL로 초기화.
+	m_pDI = NULL;
+	m_pMouse = NULL;
+
+	hr = InitDirectInput();
+	if (FAILED(hr)) {
+		return FALSE;
+	}
+	//멀티미디어 타이머 시작.
+	m_Timer = new CMMTimers(10);
+	MyhWnd = GetSafeHwnd();
+	m_Timer->startTimer(50, FALSE, TimerProcK);
 
 	return TRUE;  // 포커스를 컨트롤에 설정하지 않으면 TRUE를 반환합니다.
 }
@@ -154,3 +179,71 @@ HCURSOR CabdTP_directXDlg::OnQueryDragIcon()
 	return static_cast<HCURSOR>(m_hIcon);
 }
 
+
+
+BOOL CabdTP_directXDlg::DestroyWindow()
+{
+	// TODO: 여기에 특수화된 코드를 추가 및/또는 기본 클래스를 호출합니다.
+	if (NULL != m_pMouse) {
+		m_pMouse->Unacquire();
+		m_pMouse->Release();
+		m_pMouse = NULL;
+	}
+	if (NULL != m_pDI) {
+		m_pDI->Release();
+		m_pDI = NULL;
+	}
+	return CDialogEx::DestroyWindow();
+}
+
+HRESULT CabdTP_directXDlg::InitDirectInput() {
+	HRESULT hr;
+	HWND hWnd = AfxGetMainWnd()->m_hWnd;
+	//Direct Input 객체 생성.
+	hr = DirectInput8Create((HINSTANCE)GetWindowLong(hWnd, GWL_HINSTANCE), DIRECTINPUT_VERSION, IID_IDirectInput8, (void**)&m_pDI, NULL);
+	if (FAILED(hr)) return hr;
+	//DirectInputDevice 객체 생성.
+	hr = m_pDI->CreateDevice(GUID_SysMouse, &m_pMouse, NULL);
+	if (FAILED(hr))return hr;
+	//마우스 정보에 대한 데이터 포맷 설정.
+	hr = m_pMouse->SetDataFormat(&c_dfDIMouse);
+	if (FAILED(hr)) return hr;
+	//윈도우의 모드 설정.
+	hr = m_pMouse->SetCooperativeLevel(hWnd, DISCL_EXCLUSIVE | DISCL_FOREGROUND);
+	if (FAILED(hr)) return hr;
+	return S_OK;
+}
+
+HRESULT CabdTP_directXDlg::UpdateInputState() {
+	if (NULL != m_pMouse) {
+		DIMOUSESTATE dims;								//DirectInput의 마우스 상태 구조체.
+		HRESULT hr;
+		//장치 획득.
+		hr = m_pMouse->Acquire();
+		hr = m_pMouse->GetDeviceState(sizeof(DIMOUSESTATE), &dims);
+
+		if (FAILED(hr)) return hr;
+		//대화상자의 정적 텍스트 건트롤에 마우스 포인터의 위치 출력.
+		m_MouseData.Format((CString)"(%3d, %3d, %3d )", dims.lX, dims.lY, dims.lZ);
+		//마우스 버튼의 눌려짐 여부 판별.
+		if (dims.rgbButtons[0] & 0x80) m_left = TRUE;
+		else m_left = FALSE;
+		if (dims.rgbButtons[1] & 0x80) m_right = TRUE;
+		else m_right = FALSE;
+		if (dims.rgbButtons[2] & 0x80) m_center = TRUE;
+		else m_center = FALSE;
+
+		UpdateData(FALSE);
+	}
+	return S_OK;
+}
+
+afx_msg LRESULT CabdTP_directXDlg::OnMMTimer(WPARAM xParam, LPARAM lParam) {
+	HRESULT hr;
+	hr = UpdateInputState();
+	if (FAILED(hr)) {
+		m_Timer->stopTimer();
+		MessageBox((CString)"Error Reading Input state", (CString)"DirectInput Sample", MB_ICONERROR | MB_OK);
+	}
+	return 0;
+}
