@@ -5,8 +5,6 @@
 //#include <assert.h>
 #include <windows.h>
 #include <conio.h>
-#include <mmsystem.h>
-#pragma comment(lib, "winmm.lib") 
 #include "Keyboard.h"
 #include "Fraction.h"
 using namespace std;
@@ -15,9 +13,37 @@ using namespace std;
 #define MAX_X 1536
 #define MAX_Y 863
 #define MAX_V 1000
-//type, class
 
-//variable
+//type, class
+class TimeU {
+private:
+	static bool flag;
+	static __int64 timeFreq;
+	__int64 startTime;
+
+public:
+	TimeU() { init(); resetTime(); }
+	int getTime()const { return int((getTimeStatic() - startTime) * 1000000 / timeFreq); }
+	void resetTime() { startTime = getTimeStatic(); }
+
+	static void init() {
+		if (!flag) {
+			LARGE_INTEGER temp;
+			QueryPerformanceFrequency(&temp);
+			timeFreq = temp.QuadPart;
+			flag = true;
+		}
+	}
+	static __int64 getTimeStatic() {
+		LARGE_INTEGER temp;
+		QueryPerformanceCounter(&temp);
+		return temp.QuadPart;
+	}
+};
+
+//global variable
+bool TimeU::flag = false;
+__int64 TimeU::timeFreq = 0;
 C_fraction sensitive = C_fraction(295, 100);
 C_fraction offset = C_fraction(-6, 100);
 C_fraction DR[MAX_V];
