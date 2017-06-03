@@ -39,6 +39,7 @@ protected:
 	afx_msg LRESULT OnMMTimer(WPARAM xParam, LPARAM lParam);
 	DECLARE_MESSAGE_MAP()
 public:
+	int x, y;
 	CString m_MouseData;
 	BOOL m_center;
 	BOOL m_left;

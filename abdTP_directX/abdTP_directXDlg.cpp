@@ -60,6 +60,8 @@ CabdTP_directXDlg::CabdTP_directXDlg(CWnd* pParent /*=NULL*/)
 	, m_center(FALSE)
 	, m_left(FALSE)
 	, m_right(FALSE)
+	, x(0)
+	, y(0)
 {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
 }
@@ -123,9 +125,9 @@ BOOL CabdTP_directXDlg::OnInitDialog()
 		return FALSE;
 	}
 	//멀티미디어 타이머 시작.
-	m_Timer = new CMMTimers(10);
+	m_Timer = new CMMTimers(1);
 	MyhWnd = GetSafeHwnd();
-	m_Timer->startTimer(50, FALSE, TimerProcK);
+	m_Timer->startTimer(1000, FALSE, TimerProcK);
 
 	return TRUE;  // 포커스를 컨트롤에 설정하지 않으면 TRUE를 반환합니다.
 }
@@ -224,9 +226,13 @@ HRESULT CabdTP_directXDlg::UpdateInputState() {
 
 		if (FAILED(hr)) return hr;
 		//대화상자의 정적 텍스트 건트롤에 마우스 포인터의 위치 출력.
-		m_MouseData.Format((CString)"(%3d, %3d, %3d )", dims.lX, dims.lY, dims.lZ);
+		x += dims.lX; y += dims.lY;
+		m_MouseData.Format((CString)"(%3d, %3d, %3d )", x, y, dims.lZ);
 		//마우스 버튼의 눌려짐 여부 판별.
-		if (dims.rgbButtons[0] & 0x80) m_left = TRUE;
+		if (dims.rgbButtons[0] & 0x80) {
+			m_left = TRUE;
+			x = y = 0;
+		}
 		else m_left = FALSE;
 		if (dims.rgbButtons[1] & 0x80) m_right = TRUE;
 		else m_right = FALSE;
