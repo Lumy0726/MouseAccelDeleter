@@ -4,12 +4,15 @@
 #include <conio.h>
 #include <mmsystem.h>
 #include <dinput.h>
+#include "Keyboard.h"
 #pragma comment(lib, "winmm.lib") 
 #pragma comment(lib, "D:\\Folder\\LinkProgramFiles\\Microsoft DirectX SDK (June 2010)\\Lib\\x86\\dinput8.lib")
 #pragma comment(lib, "D:\\Folder\\LinkProgramFiles\\Microsoft DirectX SDK (June 2010)\\Lib\\x86\\dxguid.lib")
 using namespace std;
 
 //mecro
+#define MAX_X 1536
+#define MAX_Y 863
 
 //type, class
 class TimeU {
@@ -20,10 +23,17 @@ private:
 
 public:
 	TimeU() { init(); resetTime(); }
-	int getTime()const { return int((getTicStatic() - startTic) * 1000000 / ticFreq); }
+	__int64 getTime()const { return (getTicStatic() - startTic) * __int64(1000000) / ticFreq; }
 	void resetTime() { startTic = getTicStatic(); }
-	void cycleWait(int cycle) { int temp1 = 0, temp2 = 0; while ((temp2 = getTime() % cycle) >= temp1)temp1 = temp2; }
+	void cycleWait(__int64 cycle) {
+		__int64 temp1 = 0, temp2 = 0;
+		if (getTime() > mSec2uSec(1800 * 1000)/*30Ка*/) resetTime();
+		while ((temp2 = getTime() % cycle) >= temp1){
+			temp1 = temp2;
+		}
+	}
 
+	//static function.
 	static void init(){
 		if (!flag) {
 			LARGE_INTEGER temp;
@@ -37,6 +47,11 @@ public:
 		QueryPerformanceCounter(&temp);
 		return temp.QuadPart;
 	}
+	static __int64 getTicFreq() {
+		init(); return ticFreq;
+	}
+	static __int64 mSec2uSec(int input) { return __int64(input) * __int64(1000); }
+	static int uSec2mSec(__int64 input) { return int(input / __int64(1000)); }
 };
 bool TimeU::flag = false;
 __int64 TimeU::ticFreq = 0;
@@ -61,12 +76,14 @@ int main(int argn, char * argv[], char * env[]) {
 	while (!_kbhit());
 	timeU.resetTime();
 	while (_kbhit()) { _getch(); }
-	while (!_kbhit()) {
-		timeU.cycleWait(50000);
+	C_keyboard::Check(C_keyboard::S);
+	while (!C_keyboard::Check_state(C_keyboard::Q)) {
+		timeU.cycleWait(TimeU::mSec2uSec(50));
 		hr = GetMouseDelta(&dx, &dy);
 		x += dx, y += dy;
 		if (FAILED(hr)) { cout << "ERRER!"; return 0; }
 		cout << setw(3) << x << "," << setw(3) << y << endl;
+		if (true||C_keyboard::Check_press(C_keyboard::S))SetCursorPos(MAX_X / 2, MAX_Y / 2);
 	}
 	ExitMouse();
 	return 0;

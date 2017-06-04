@@ -33,12 +33,24 @@
     <ClCompile Include="main.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
+    <ClCompile Include="TimeU.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="DImouse.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Keyboard.h">
       <Filter>소스 파일</Filter>
     </ClInclude>
     <ClInclude Include="Fraction.h">
+      <Filter>소스 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="TimeU.h">
+      <Filter>소스 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="DImouse.h">
       <Filter>소스 파일</Filter>
     </ClInclude>
   </ItemGroup>
